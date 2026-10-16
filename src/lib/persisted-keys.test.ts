@@ -30,8 +30,6 @@ const ALLOWED_PERSISTED_KEYS = new Map<string, string>([
   ["`${PASSWORDS_PREFIX}${id}`", "user-entered server password, per connection"],
   ["RECENT_DIRS_KEY", "directories the user picked, for the recents list"],
   ["AUTH_SETTINGS_KEY", "biometric/app-lock preference"],
-  ["CONSENT_KEY", "telemetry/analytics consent decision (local-only)"],
-  ["CHATWOOT_SOURCE_KEY", "support contact id issued by the support inbox"],
 ])
 
 const SRC = path.join(import.meta.dirname, "..")

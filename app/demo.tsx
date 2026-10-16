@@ -31,9 +31,8 @@ export default function DemoScreen() {
   const script = useMemo(() => buildDemoScript(), [])
   const [reply, setReply] = useState<DemoPermissionReply | null>(null)
 
-  // Fires once per screen mount — this is a fully offline, consent-gated
-  // event (track() is a no-op without telemetry consent, same as every
-  // other analytics call site).
+  // Fires once per screen mount — fully offline. track() is a no-op in the
+  // local-only analytics shim, same as every other analytics call site.
   useEffect(() => {
     track(AnalyticsEvent.DemoStarted)
   }, [])
@@ -84,13 +83,6 @@ export default function DemoScreen() {
               testID="demo-connect-button"
             >
               <Text style={s.connectButtonText}>{t("demo.connectButton")}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={s.hostedCtaLink}
-              onPress={handleConnectPress}
-              testID="demo-hosted-cta"
-            >
-              <Text style={s.hostedCtaLinkText}>{t("demo.hostedCtaLink")}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={s.setupGuideLink}
@@ -147,8 +139,6 @@ const s = StyleSheet.create({
     alignItems: "center",
   },
   connectButtonText: { color: "#ffffff", fontWeight: "600", fontSize: 15 },
-  hostedCtaLink: { marginTop: 14 },
-  hostedCtaLinkText: { fontSize: 14, fontWeight: "600", color: "#8b5cf6", textAlign: "center" },
   setupGuideLink: { marginTop: 14 },
   setupGuideLinkText: { fontSize: 14, fontWeight: "600", color: "#6366f1" },
 })

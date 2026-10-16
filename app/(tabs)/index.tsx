@@ -27,9 +27,8 @@ import type BottomSheet from "@gorhom/bottom-sheet"
 import type { Session, Project } from "../../src/lib/sdk"
 import { DirectorySwitcher, DirectoryBrowserSheet } from "../../src/components/chat"
 import { groupByDirectory } from "../../src/lib/session-grouping"
-import { UpdateBanner } from "../../src/components/UpdateBanner"
 import { nameOf } from "../../src/lib/path-utils"
-import { SETUP_GUIDE_URL } from "../../src/lib/links"
+import { REPO_URL } from "../../src/lib/links"
 
 function formatTime(timestamp: number, t: (key: string, opts?: Record<string, unknown>) => string): string {
   const date = new Date(timestamp)
@@ -454,7 +453,7 @@ export default function SessionsScreen() {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.setupGuideLink}
-          onPress={() => Linking.openURL(SETUP_GUIDE_URL)}
+          onPress={() => Linking.openURL(REPO_URL)}
           testID="setup-guide-link"
         >
           <Text style={styles.setupGuideLinkText}>{t("sessionsList.empty.setupGuideLink")}</Text>
@@ -548,8 +547,6 @@ export default function SessionsScreen() {
           <Text style={styles.errorText}>{error}</Text>
         </View>
       )}
-
-      <UpdateBanner isDark={isDark} />
 
       <FlatList
         data={rows}
