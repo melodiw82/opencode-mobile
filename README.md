@@ -165,10 +165,12 @@ npm run typecheck
 ```
 
 Local Android build (`npx expo prebuild --platform android && npx expo run:android` or
-`cd android && ./gradlew assembleRelease`). **From Iran**, add a reachable Maven mirror
-in `android/build.gradle` / `android/settings.gradle` (for example a mirror that proxies
-`google()` and `mavenCentral()`) and set `GRADLE_USER_HOME`; the committed `google()` /
-`mavenCentral()` repositories may be blocked or extremely slow.
+`cd android && ./gradlew assembleRelease`). The `android/` project is **not committed** —
+it is generated from `app.json` on every build (CI does the same), so a stale native tree
+can never break the build. **From Iran**, add a reachable Maven mirror in the generated
+`android/build.gradle` / `android/settings.gradle` (a mirror that proxies `google()` and
+`mavenCentral()`) and set `GRADLE_USER_HOME`, since `google()` / `mavenCentral()` may be
+blocked or extremely slow.
 
 CI (`.github/workflows/build.yml`) builds a sideloadable `app-release.apk` on every push
 to `main` and attaches it to the artifact store. Tagging `v*` also produces a GitHub
