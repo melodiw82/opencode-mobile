@@ -12,7 +12,6 @@
     "check:versions": "node scripts/check-version-parity.mjs",
     "bridge": "node bridge/notify-bridge.mjs",
     "export:web": "expo export --platform web",
-    "test:android-cua": "python3 scripts/android-cua-smoke.py",
     "test": "node --experimental-strip-types --test \"src/**/*.test.ts\" \"scripts/*.test.mjs\" \"bridge/*.test.mjs\""
   },
   "dependencies": {
