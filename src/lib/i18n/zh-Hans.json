@@ -309,6 +309,10 @@
         "label": "错误",
         "description": "当会话遇到问题时"
       },
+      "limits": {
+        "label": "用量限制",
+        "description": "当模型被限流或达到用量/免费额度上限时"
+      },
       "connection": {
         "label": "连接",
         "description": "当应用长时间失去连接时"

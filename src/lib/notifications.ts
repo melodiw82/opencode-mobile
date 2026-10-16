@@ -6,7 +6,7 @@ import { Platform, AppState } from "react-native"
 // Categories — every notification belongs to exactly one
 // ---------------------------------------------------------------------------
 
-export const categories = ["permissions", "questions", "completed", "errors", "connection"] as const
+export const categories = ["permissions", "questions", "completed", "errors", "limits", "connection"] as const
 export type Category = (typeof categories)[number]
 
 // Per-category metadata used by both the notification module and the settings UI.
@@ -34,6 +34,11 @@ export const categoryMeta: Record<Category, { labelKey: string; descriptionKey: 
     descriptionKey: "notifications.categories.errors.description",
     icon: "alert-circle",
   },
+  limits: {
+    labelKey: "notifications.categories.limits.label",
+    descriptionKey: "notifications.categories.limits.description",
+    icon: "speedometer",
+  },
   connection: {
     labelKey: "notifications.categories.connection.label",
     descriptionKey: "notifications.categories.connection.description",
@@ -47,6 +52,9 @@ export const defaultPreferences: Record<Category, boolean> = {
   questions: true,
   completed: false,
   errors: true,
+  // On by default: the free model tiers are the whole point of this client in
+  // regions without a paid OpenCode plan, and a hit limit blocks all work.
+  limits: true,
   connection: true,
 }
 

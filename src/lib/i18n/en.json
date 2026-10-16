@@ -309,6 +309,10 @@
         "label": "Errors",
         "description": "When a session encounters a problem"
       },
+      "limits": {
+        "label": "Usage Limits",
+        "description": "When a model is rate limited or a usage/free quota is reached"
+      },
       "connection": {
         "label": "Connection",
         "description": "When the app loses connection for an extended period"

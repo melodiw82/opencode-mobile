@@ -3,6 +3,7 @@ import { useConnections } from "./connections"
 import { useSessions, abortedSessions } from "./sessions"
 import { send as notify } from "../lib/notifications"
 import { sanitizeBody } from "../lib/notify-format"
+import { classifyLimit } from "../lib/usage-limit"
 import { statusFromPart } from "../lib/status-labels"
 import { addBreadcrumb } from "../lib/sentry"
 import { AnalyticsEvent, track } from "../lib/analytics"
@@ -272,6 +273,22 @@ export const useEvents = create<EventsState>((set, get) => ({
                 }
               }
 
+              // Provider throttling: opencode retries a rate-limited or
+              // overloaded request and reports it here. Notify once per session
+              // per cooldown so a long backoff run doesn't spam the shade, and
+              // under "limits" — a throttled free-tier request is exactly what
+              // this category exists for.
+              if (status.type === "retry") {
+                notify({
+                  category: "limits",
+                  title: "Rate limited",
+                  body: sanitizeBody(status.message, "Waiting to retry the request"),
+                  sessionId: sessionID,
+                  dedupeKey: `retry-${sessionID}`,
+                  dedupeCooldownMs: 120_000,
+                })
+              }
+
               if (completed) {
                 // A user-cancelled run still ends busy -> idle; don't count it
                 // as a received response or a review-worthy success.
@@ -361,9 +378,13 @@ export const useEvents = create<EventsState>((set, get) => ({
               if (useSessions.getState().currentSession?.id === sessionID) {
                 useSessions.getState().refreshMessages()
               }
+              const limit = classifyLimit(error?.message)
               notify({
-                category: "errors",
-                title: "Session error",
+                // A hit usage/rate limit is not a bug the user should file —
+                // route it to "Limits" (separately controllable, and on by
+                // default) instead of the generic "Errors" category.
+                category: limit === "none" ? "errors" : "limits",
+                title: limit === "rate-limit" ? "Rate limited" : limit === "quota" ? "Usage limit reached" : "Session error",
                 body: sanitizeBody(error?.message, "Something went wrong"),
                 sessionId: sessionID,
               })
