@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "check:versions": "node scripts/check-version-parity.mjs",
     "test:android-cua": "python3 scripts/android-cua-smoke.py",
-    "test": "node --experimental-strip-types --test \"src/**/*.test.ts\" \"scripts/*.test.mjs\""
+    "test": "node --experimental-strip-types --test \"src/**/*.test.ts\" \"scripts/*.test.mjs\" \"bridge/*.test.mjs\""
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
