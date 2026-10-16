@@ -21,7 +21,7 @@
  *   const current = hasTelemetryConsent()   // boolean | null (null = not yet decided)
  */
 
-import * as SecureStore from "expo-secure-store"
+import { storage } from "./storage"
 import { disableSentry, initSentry, sentryEnabled } from "./sentry"
 import { initAnalytics, shutdownAnalytics, analyticsEnabled, trackAppOpened } from "./analytics"
 
@@ -33,12 +33,12 @@ let _resolved: boolean | null = null // null = unknown, true = granted, false = 
 let transition = Promise.resolve()
 
 /**
- * Load persisted consent from SecureStore.
+ * Load persisted consent from storage.
  * Returns 'unknown' if the user has never been asked.
  */
 export async function loadTelemetryConsent(): Promise<ConsentState> {
   try {
-    const stored = await SecureStore.getItemAsync(CONSENT_KEY)
+    const stored = await storage.getItemAsync(CONSENT_KEY)
     if (stored === "granted") {
       _resolved = true
       return "granted"
@@ -78,7 +78,7 @@ export function setTelemetryConsent(granted: boolean): Promise<void> {
 
 async function applyTelemetryConsent(granted: boolean): Promise<void> {
   if (granted) {
-    await SecureStore.setItemAsync(CONSENT_KEY, "granted")
+    await storage.setItemAsync(CONSENT_KEY, "granted")
     _resolved = true
     if (!sentryEnabled()) initSentry()
     if (!analyticsEnabled()) initAnalytics()
@@ -96,9 +96,9 @@ async function applyTelemetryConsent(granted: boolean): Promise<void> {
   await disableSentry()
   await shutdownAnalytics()
   try {
-    await SecureStore.setItemAsync(CONSENT_KEY, "denied")
+    await storage.setItemAsync(CONSENT_KEY, "denied")
   } catch (error) {
-    await SecureStore.deleteItemAsync(CONSENT_KEY)
+    await storage.deleteItemAsync(CONSENT_KEY)
     throw error
   }
 }

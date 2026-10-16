@@ -94,17 +94,25 @@ export function configure(accessor: PreferencesAccessor) {
 // Setup & permissions
 // ---------------------------------------------------------------------------
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-})
+// expo-notifications has no web implementation; calling into it on the web
+// build (a secondary target for this fork) throws. Local notifications only
+// make sense on native anyway — on web the notify-bridge/ntfy path covers them.
+const web = Platform.OS === "web"
+
+if (!web) {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  })
+}
 
 export async function setup(): Promise<boolean> {
+  if (web) return false
   if (!Device.isDevice) return false
 
   const { status: existing } = await Notifications.getPermissionsAsync()
@@ -121,6 +129,7 @@ export async function setup(): Promise<boolean> {
 }
 
 export async function granted(): Promise<boolean> {
+  if (web) return false
   const { status } = await Notifications.getPermissionsAsync()
   return status === "granted"
 }
@@ -140,6 +149,7 @@ async function ensureChannel() {
 // ---------------------------------------------------------------------------
 
 export async function send(payload: Payload) {
+  if (web) return
   const prefs = preferences()
   if (!prefs[payload.category]) return
   if (AppState.currentState === "active") return
@@ -173,6 +183,7 @@ export async function send(payload: Payload) {
 // ---------------------------------------------------------------------------
 
 export function onTap(handler: (data: NotificationData) => void) {
+  if (web) return () => {}
   const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
     const raw = response.notification.request.content.data
     const data = raw as unknown as NotificationData | undefined

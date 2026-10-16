@@ -51,7 +51,7 @@ test("every on-device write uses a reviewed key, never model-generated content",
 
   for (const file of sourceFiles(SRC)) {
     const code = fs.readFileSync(file, "utf8")
-    for (const match of code.matchAll(/SecureStore\.setItemAsync\(\s*([^,]+?)\s*,/g)) {
+    for (const match of code.matchAll(/storage\.setItemAsync\(\s*([^,]+?)\s*,/g)) {
       const key = match[1].trim()
       if (!ALLOWED_PERSISTED_KEYS.has(key)) {
         unknown.push(`${path.relative(SRC, file)}: ${key}`)
@@ -73,7 +73,7 @@ test("the allowlist itself stays live (no keys left behind after a refactor)", (
     .map((file) => fs.readFileSync(file, "utf8"))
     .join("\n")
   const used = new Set(
-    [...code.matchAll(/SecureStore\.setItemAsync\(\s*([^,]+?)\s*,/g)].map((match) => match[1].trim()),
+    [...code.matchAll(/storage\.setItemAsync\(\s*([^,]+?)\s*,/g)].map((match) => match[1].trim()),
   )
   const stale = [...ALLOWED_PERSISTED_KEYS.keys()].filter((key) => !used.has(key))
 

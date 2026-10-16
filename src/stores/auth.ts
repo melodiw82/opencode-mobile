@@ -1,8 +1,14 @@
 import { create } from "zustand"
+import { Platform } from "react-native"
 import * as LocalAuthentication from "expo-local-authentication"
-import * as SecureStore from "expo-secure-store"
+import { storage } from "../lib/storage"
 
 const AUTH_SETTINGS_KEY = "opencode_auth_settings"
+
+// expo-local-authentication is native-only. On the web build there is no
+// biometric hardware to query, so skip it entirely and treat the app as
+// unlocked (the web target is meant for a trusted, self-hosted origin).
+const web = Platform.OS === "web"
 
 interface AuthSettings {
   requireBiometric: boolean
@@ -43,8 +49,8 @@ export const useAuth = create<AuthState>((set, get) => ({
       set({ isLoading: true, error: null })
 
       // Check biometric availability
-      const hasHardware = await LocalAuthentication.hasHardwareAsync()
-      const isEnrolled = await LocalAuthentication.isEnrolledAsync()
+      const hasHardware = !web && (await LocalAuthentication.hasHardwareAsync())
+      const isEnrolled = !web && (await LocalAuthentication.isEnrolledAsync())
       const hasBiometrics = hasHardware && isEnrolled
 
       let biometricType: LocalAuthentication.AuthenticationType | null = null
@@ -54,11 +60,12 @@ export const useAuth = create<AuthState>((set, get) => ({
       }
 
       // Load settings
-      const stored = await SecureStore.getItemAsync(AUTH_SETTINGS_KEY)
+      const stored = await storage.getItemAsync(AUTH_SETTINGS_KEY)
       const settings: AuthSettings = stored ? JSON.parse(stored) : DEFAULT_SETTINGS
 
-      // If biometric is not required, auto-authenticate
-      const isAuthenticated = !settings.requireBiometric
+      // If biometric is not required, auto-authenticate. Web has no biometrics,
+      // so it is always treated as authenticated.
+      const isAuthenticated = web || !settings.requireBiometric
 
       set({
         hasBiometrics,
@@ -129,7 +136,7 @@ export const useAuth = create<AuthState>((set, get) => ({
 
   updateSettings: async (updates) => {
     const settings = { ...get().settings, ...updates }
-    await SecureStore.setItemAsync(AUTH_SETTINGS_KEY, JSON.stringify(settings))
+    await storage.setItemAsync(AUTH_SETTINGS_KEY, JSON.stringify(settings))
     set({ settings })
   },
 

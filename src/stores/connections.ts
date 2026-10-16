@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import * as SecureStore from "expo-secure-store"
+import { storage } from "../lib/storage"
 import * as Crypto from "expo-crypto"
 import type { ServerConnection, ConnectionType } from "../lib/types"
 import { createClient, type Client, type Project } from "../lib/sdk"
@@ -88,8 +88,8 @@ export const useConnections = create<ConnectionsState>((set, get) => ({
     try {
       set({ isLoading: true, error: null })
       const [stored, recentRaw] = await Promise.all([
-        SecureStore.getItemAsync(CONNECTIONS_KEY),
-        SecureStore.getItemAsync(RECENT_DIRS_KEY),
+        storage.getItemAsync(CONNECTIONS_KEY),
+        storage.getItemAsync(RECENT_DIRS_KEY),
       ])
       const connections: ServerConnection[] = stored ? JSON.parse(stored) : []
       const recentDirectories: string[] = recentRaw ? JSON.parse(recentRaw) : []
@@ -103,7 +103,7 @@ export const useConnections = create<ConnectionsState>((set, get) => ({
       let project: Project | null = null
       let home: string | null = null
       if (active) {
-        const password = await SecureStore.getItemAsync(`${PASSWORDS_PREFIX}${active.id}`)
+        const password = await storage.getItemAsync(`${PASSWORDS_PREFIX}${active.id}`)
         const auth = buildAuth(active.username, password)
         const built = buildClient(active.url, active.directory, auth)
         client = built.client
@@ -148,10 +148,10 @@ export const useConnections = create<ConnectionsState>((set, get) => ({
 
     // Store password separately if provided
     if (password) {
-      await SecureStore.setItemAsync(`${PASSWORDS_PREFIX}${id}`, password)
+      await storage.setItemAsync(`${PASSWORDS_PREFIX}${id}`, password)
     }
 
-    await SecureStore.setItemAsync(CONNECTIONS_KEY, JSON.stringify(connections))
+    await storage.setItemAsync(CONNECTIONS_KEY, JSON.stringify(connections))
 
     // If this is the first/active connection, create client
     let client = get().client
@@ -189,8 +189,8 @@ export const useConnections = create<ConnectionsState>((set, get) => ({
     const connections = get().connections.filter((c) => c.id !== id)
 
     // Remove stored password
-    await SecureStore.deleteItemAsync(`${PASSWORDS_PREFIX}${id}`)
-    await SecureStore.setItemAsync(CONNECTIONS_KEY, JSON.stringify(connections))
+    await storage.deleteItemAsync(`${PASSWORDS_PREFIX}${id}`)
+    await storage.setItemAsync(CONNECTIONS_KEY, JSON.stringify(connections))
 
     // If removing active connection, clear client
     const wasActive = get().activeConnection?.id === id
@@ -199,8 +199,8 @@ export const useConnections = create<ConnectionsState>((set, get) => ({
       if (newActive) {
         // Mark new connection as active
         newActive.active = true
-        await SecureStore.setItemAsync(CONNECTIONS_KEY, JSON.stringify(connections))
-        const password = await SecureStore.getItemAsync(`${PASSWORDS_PREFIX}${newActive.id}`)
+        await storage.setItemAsync(CONNECTIONS_KEY, JSON.stringify(connections))
+        const password = await storage.getItemAsync(`${PASSWORDS_PREFIX}${newActive.id}`)
         const auth = buildAuth(newActive.username, password)
         const built = buildClient(newActive.url, newActive.directory, auth)
         set({ connections, activeConnection: newActive, client: built.client, clientBase: built.base })
@@ -218,7 +218,7 @@ export const useConnections = create<ConnectionsState>((set, get) => ({
       active: c.id === id,
     }))
 
-    await SecureStore.setItemAsync(CONNECTIONS_KEY, JSON.stringify(connections))
+    await storage.setItemAsync(CONNECTIONS_KEY, JSON.stringify(connections))
 
     const active = connections.find((c) => c.id === id) || null
     let client: Client | null = null
@@ -227,7 +227,7 @@ export const useConnections = create<ConnectionsState>((set, get) => ({
     let home: string | null = null
 
     if (active) {
-      const password = await SecureStore.getItemAsync(`${PASSWORDS_PREFIX}${active.id}`)
+      const password = await storage.getItemAsync(`${PASSWORDS_PREFIX}${active.id}`)
       const auth = buildAuth(active.username, password)
       const built = buildClient(active.url, active.directory, auth)
       client = built.client
@@ -246,7 +246,7 @@ export const useConnections = create<ConnectionsState>((set, get) => ({
 
       // Update last connected time
       active.lastConnected = Date.now()
-      await SecureStore.setItemAsync(CONNECTIONS_KEY, JSON.stringify(connections))
+      await storage.setItemAsync(CONNECTIONS_KEY, JSON.stringify(connections))
     }
 
     set({ connections, activeConnection: active, client, clientBase: base, currentProject: project, serverHome: home })
@@ -279,20 +279,20 @@ export const useConnections = create<ConnectionsState>((set, get) => ({
   updateConnection: async (id, updates, password) => {
     const connections = get().connections.map((c) => (c.id === id ? { ...c, ...updates } : c))
 
-    await SecureStore.setItemAsync(CONNECTIONS_KEY, JSON.stringify(connections))
+    await storage.setItemAsync(CONNECTIONS_KEY, JSON.stringify(connections))
 
     // Persist a new password only when one was entered. The edit form loads the
     // password field blank (passwords aren't read back for security), so an
     // empty value means "keep the existing password", not "clear it". Written
     // before the active-client rebuild below so the rebuilt client picks it up.
     if (password) {
-      await SecureStore.setItemAsync(`${PASSWORDS_PREFIX}${id}`, password)
+      await storage.setItemAsync(`${PASSWORDS_PREFIX}${id}`, password)
     }
 
     // If updating active connection, recreate client
     if (get().activeConnection?.id === id) {
       const active = connections.find((c) => c.id === id)!
-      const password = await SecureStore.getItemAsync(`${PASSWORDS_PREFIX}${id}`)
+      const password = await storage.getItemAsync(`${PASSWORDS_PREFIX}${id}`)
       const auth = buildAuth(active.username, password)
       const built = buildClient(active.url, active.directory, auth)
       try {
@@ -364,6 +364,6 @@ export const useConnections = create<ConnectionsState>((set, get) => ({
     // Move to front, dedup, cap at MAX
     const updated = [directory, ...current.filter((d) => d !== directory)].slice(0, MAX_RECENT_DIRS)
     set({ recentDirectories: updated })
-    await SecureStore.setItemAsync(RECENT_DIRS_KEY, JSON.stringify(updated))
+    await storage.setItemAsync(RECENT_DIRS_KEY, JSON.stringify(updated))
   },
 }))

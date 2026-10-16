@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import * as SecureStore from "expo-secure-store"
+import { storage } from "../lib/storage"
 import { type Category, defaultPreferences } from "../lib/notifications"
 import { clampPageSize, mergeStoredSettings } from "../lib/settings-merge"
 import { setAppLocale } from "../lib/i18n/config"
@@ -32,7 +32,7 @@ function snapshot(get: () => SettingsState): Settings {
 }
 
 async function persist(settings: Settings) {
-  await SecureStore.setItemAsync(SETTINGS_KEY, JSON.stringify(settings))
+  await storage.setItemAsync(SETTINGS_KEY, JSON.stringify(settings))
 }
 
 export const useSettings = create<SettingsState>((set, get) => ({
@@ -40,7 +40,7 @@ export const useSettings = create<SettingsState>((set, get) => ({
   loaded: false,
 
   load: async () => {
-    const raw = await SecureStore.getItemAsync(SETTINGS_KEY)
+    const raw = await storage.getItemAsync(SETTINGS_KEY)
     if (raw) {
       const parsed = JSON.parse(raw) as Partial<Settings>
       // Merge stored settings with defaults so new fields/categories get their default

@@ -4,7 +4,7 @@
 import { Platform, Share } from "react-native"
 import * as Clipboard from "expo-clipboard"
 import * as Device from "expo-device"
-import * as SecureStore from "expo-secure-store"
+import { storage } from "./storage"
 import appJson from "../../app.json"
 import { log, formatLogLines } from "./logbuffer"
 import { type Classification, type ProbeAttempt, type ParsedUrl, parseUrl, classify } from "./diagnostics-classify"
@@ -197,8 +197,8 @@ async function sendReportToSupport(report: DiagnosticReport): Promise<void> {
   if (hasTelemetryConsent() !== true || !chatwootConfigured()) return
   try {
     await sendSupportReport(formatReportForSupport(report), {
-      loadSourceId: () => SecureStore.getItemAsync(CHATWOOT_SOURCE_KEY),
-      saveSourceId: (id) => SecureStore.setItemAsync(CHATWOOT_SOURCE_KEY, id),
+      loadSourceId: () => storage.getItemAsync(CHATWOOT_SOURCE_KEY),
+      saveSourceId: (id) => storage.setItemAsync(CHATWOOT_SOURCE_KEY, id),
     })
     log.info("diag", "report delivered to support inbox")
   } catch (e) {

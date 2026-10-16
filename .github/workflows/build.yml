@@ -130,3 +130,30 @@ jobs:
         with:
           files: app-release.apk
           generate_release_notes: true
+
+  web:
+    # Second target: a static browser build you host yourself (SPA output). Same
+    # no-Google/no-US-SaaS property as the APK — nothing phones home.
+    runs-on: ubuntu-latest
+    env:
+      EXPO_NO_TELEMETRY: "1"
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.17.0
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Export web (SPA)
+        run: npx expo export --platform web
+
+      - name: Upload web bundle
+        uses: actions/upload-artifact@v7
+        with:
+          name: web-dist
+          path: dist/
+          if-no-files-found: error

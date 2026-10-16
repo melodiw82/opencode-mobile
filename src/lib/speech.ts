@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react"
+import { Platform } from "react-native"
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from "expo-speech-recognition"
 
 interface SpeechState {
@@ -13,7 +14,18 @@ interface SpeechActions {
   cancel: () => void
 }
 
+// expo-speech-recognition is native-only. The web build (a secondary target for
+// this fork) returns an inert hook so the session screen renders without a mic.
+const web = Platform.OS === "web"
+
 export function useSpeech(onResult: (text: string) => void): SpeechState & SpeechActions {
+  if (web) {
+    return { listening: false, transcript: "", error: null, start: async () => {}, stop: () => {}, cancel: () => {} }
+  }
+  return useNativeSpeech(onResult)
+}
+
+function useNativeSpeech(onResult: (text: string) => void): SpeechState & SpeechActions {
   const [listening, setListening] = useState(false)
   const [transcript, setTranscript] = useState("")
   const [error, setError] = useState<string | null>(null)
