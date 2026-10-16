@@ -31,7 +31,11 @@
       }
     },
     "notifications": {
-      "disabledNotice": "通知已在系统层面关闭。请在系统设置中启用通知以接收提醒。"
+      "disabledNotice": "通知已在系统层面关闭。请在系统设置中启用通知以接收提醒。",
+      "keepConnected": {
+        "label": "后台保持连接",
+        "description": "保持会话在线，使应用关闭后仍能收到提醒。仅限 Android；会略微增加耗电。"
+      }
     },
     "privacy": {
       "crashReporting": {

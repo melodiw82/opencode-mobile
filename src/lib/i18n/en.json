@@ -31,7 +31,11 @@
       }
     },
     "notifications": {
-      "disabledNotice": "Notifications are disabled at the system level. Enable them in Settings to receive alerts."
+      "disabledNotice": "Notifications are disabled at the system level. Enable them in Settings to receive alerts.",
+      "keepConnected": {
+        "label": "Keep Connected in Background",
+        "description": "Hold the session open so alerts arrive with the app closed. Android only; uses a little battery."
+      }
     },
     "privacy": {
       "crashReporting": {

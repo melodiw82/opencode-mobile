@@ -14,6 +14,7 @@ import { Ionicons } from "@expo/vector-icons"
 import { useTranslation } from "react-i18next"
 import { useAuth } from "../../src/stores/auth"
 import { useSettings } from "../../src/stores/settings"
+import { backgroundConnectionSupported } from "../../src/lib/background-connection"
 import {
   categories,
   categoryMeta,
@@ -76,7 +77,7 @@ export default function SettingsScreen() {
   const { t } = useTranslation()
 
   const { settings, hasBiometrics, updateSettings, lock } = useAuth()
-  const { notifications, setNotification, locale, setLocale } = useSettings()
+  const { notifications, setNotification, locale, setLocale, keepConnected, setKeepConnected } = useSettings()
   const [osGranted, setOsGranted] = useState<boolean | null>(null)
   const [telemetryUpdating, setTelemetryUpdating] = useState(false)
 
@@ -222,6 +223,21 @@ export default function SettingsScreen() {
             />
           )
         })}
+        {backgroundConnectionSupported && (
+          <SettingRow
+            icon="battery-half"
+            label={t("settings.notifications.keepConnected.label")}
+            description={t("settings.notifications.keepConnected.description")}
+            isDark={isDark}
+            right={
+              <Switch
+                value={keepConnected}
+                onValueChange={(value) => setKeepConnected(value)}
+                trackColor={{ false: "#767577", true: "#22c55e" }}
+              />
+            }
+          />
+        )}
         {osGranted === false && (
           <View style={[styles.settingRow, isDark && styles.settingRowDark]}>
             <Text style={[styles.settingDescription, { color: "#ef4444", paddingLeft: 48 }]}>

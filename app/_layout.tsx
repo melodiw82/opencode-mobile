@@ -20,6 +20,7 @@ import { addBreadcrumb, wrap } from "../src/lib/sentry"
 import { loadTelemetryConsent, setTelemetryConsent } from "../src/lib/telemetry"
 import { initAnalytics, trackAppOpened } from "../src/lib/analytics"
 import { flushPendingSignups } from "../src/lib/waitlist-queue-storage"
+import { startBackgroundConnection, stopBackgroundConnection } from "../src/lib/background-connection"
 
 const queryClient = new QueryClient()
 
@@ -30,6 +31,7 @@ function RootLayout() {
 
   const { initialize: initAuth, isLoading: authLoading } = useAuth()
   const { loadConnections, isLoading: connectionsLoading, client } = useConnections()
+  const keepConnected = useSettings((state) => state.keepConnected)
   const sseStarted = useRef(false)
   const notifPermissionRequested = useRef(false)
 
@@ -149,6 +151,15 @@ function RootLayout() {
       }
     }
   }, [client])
+
+  // Keep the app process (and its SSE connection) alive while backgrounded, so
+  // notifications arrive with the app closed — no Firebase. Android-only; a
+  // no-op elsewhere. Stopped the moment there is no connection or the user
+  // turns the setting off, so it never runs needlessly in the background.
+  useEffect(() => {
+    if (client && keepConnected) startBackgroundConnection()
+    else stopBackgroundConnection()
+  }, [client, keepConnected])
 
   const isLoading = authLoading || connectionsLoading || consentState === "loading"
 

@@ -39,8 +39,9 @@ notification channel you'll actually want (usage limits).
 - **Permission prompts and questions** answered from the phone
 - **Multiple connections** (LAN, WireGuard, Tailscale) side by side
 - **Biometric unlock**, OS-keystore credentials, offline demo session
-- **Notifications** (in-app and background) for permissions, questions, completions,
-  errors, connection loss, and **rate/quota limits**
+- **Notifications** for permissions, questions, completions, errors, connection loss, and
+  **rate/quota limits** — with a built-in Android keep-alive, so they arrive with the app
+  backgrounded and no Firebase involved
 
 ---
 
@@ -58,31 +59,41 @@ is built on GitHub's runners.
 
 ---
 
-## Quick start
+## How to use it
 
-**1. Run an opencode server** (on your laptop or a VPS):
+Three things: run the server, point the phone at it, done.
+
+### 1. Run the server (on your laptop or a VPS)
 
 ```bash
 npm install -g opencode-ai
-OPENCODE_SERVER_PASSWORD=yourpassword opencode serve --hostname 0.0.0.0 --port 4096
+OPENCODE_SERVER_PASSWORD=pick-a-password opencode serve --hostname 0.0.0.0 --port 4096
 ```
 
-**2. Reach it from the phone:**
+That's it — that one command is the backend the phone talks to.
 
-- *Same Wi-Fi:* use the machine's LAN IP, e.g. `http://192.168.1.100:4096`.
-- *Anywhere (recommended for Iran):* a self-hosted [WireGuard](https://www.wireguard.com/)
-  tunnel, then use the tunnel IP, e.g. `http://10.7.0.1:4096`. No third-party control plane.
-- *Tailscale:* works, but its coordination servers can be slow or blocked from Iran.
+### 2. Point the phone at it
 
-**3. In the app:** *Add Connection* → URL + password → **Connect**.
+- **Same Wi-Fi (30 seconds):** put `http://<your-laptop-IP>:4096` in the app, log in with the
+  password above. Find the IP with `ipconfig` (Windows) or `ip addr` (Linux).
+- **Away from home:** install the free [WireGuard](https://www.wireguard.com/install/) app
+  (also on F-Droid), run the [wg-easy](https://github.com/wg-easy/wg-easy) Docker image on
+  your server, scan the QR code in its web UI once, and use the server's tunnel IP. No
+  account, no third party, nothing to configure by hand.
+
+### 3. Use it
+
+*Add Connection* → URL + password → **Connect** → pick a model → chat. Permissions, questions,
+model/agent switching and diffs all work from the phone.
 
 ---
 
 ## Notifications
 
-Alerts appear in-app while the app runs, and in the background via a small relay to a
-self-hosted [`ntfy`](https://ntfy.sh) server — subscribe with the F-Droid ntfy app, no Play
-needed.
+**Built in by default** — nothing to run. While the app is connected, a quiet foreground
+service (Android, no Firebase) keeps the session alive so alerts arrive even with the screen
+off or the app in the background. Turn it off in **Settings → Notifications → Keep Connected in
+Background**.
 
 | Category | Fires when | Default |
 |---|---|---|
@@ -93,11 +104,15 @@ needed.
 | **Usage Limits** | rate limited, or a free/usage quota is hit | on |
 | Connection | the server is unreachable for a while | on |
 
+**Optional: never miss one while the app is closed.** If the phone kills the app, run the
+included relay on the machine that runs opencode — it forwards events to a self-hosted
+[`ntfy`](https://ntfy.sh) topic you subscribe to with the F-Droid ntfy app:
+
 ```bash
-npm run bridge            # stream opencode events -> your ntfy topic
+npm run bridge -- --opencode http://127.0.0.1:4096 --ntfy-url https://ntfy.sh --topic my-opencode
 ```
 
-See [`bridge/README.md`](bridge/README.md) for flags (dry-run, `--once`, topic/URL).
+See [`bridge/README.md`](bridge/README.md) for flags (dry-run, `--once`, auth).
 
 ---
 
@@ -108,9 +123,16 @@ npm run export:web        # -> dist/ (index.html + one JS bundle)
 npx serve dist            # serve from an origin you trust
 ```
 
-Handy when installing an APK is awkward. Native-only features (biometrics, local
-notifications) are inert on web; the ntfy relay still delivers alerts. On web, credentials
-live in `localStorage`, so only serve it from a trusted origin.
+Serve it and open it in a browser; it talks to the same server. Add that origin to the server
+so the browser is allowed to connect:
+
+```bash
+opencode serve --hostname 0.0.0.0 --port 4096 --cors https://your-web-origin
+```
+
+Native-only features (biometrics, the background service) are inert on web; the ntfy relay
+still delivers alerts. Credentials live in `localStorage`, so only serve it from a trusted
+origin.
 
 ---
 
