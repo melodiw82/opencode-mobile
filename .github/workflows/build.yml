@@ -111,16 +111,14 @@ jobs:
             } > /tmp/summary.log 2>&1
             echo "::warning title=Gradle failed::$(tr '\n' '~' < /tmp/summary.log | head -c 60000)"
           fi
-          echo "status=$status" >> "$GITHUB_OUTPUT"
-          exit 0
 
       - name: Upload APK artifact
-        if: steps.build.outputs.status == '0'
+        if: steps.build.outcome == 'success'
         uses: actions/upload-artifact@v7
         with:
           name: app-release
           path: android/app/build/outputs/apk/release/app-release.apk
-          if-no-files-found: ignore
+          if-no-files-found: error
 
       - name: Upload APK artifact
         if: success()
