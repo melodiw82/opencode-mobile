@@ -15,9 +15,9 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          # Node >= 23.6 runs the TypeScript test files natively (type-stripping),
-          # matching the local toolchain. No build step or extra deps required.
-          node-version: 24
+          # Node 22.17 runs the TypeScript test files via --experimental-strip-types,
+          # matching the local toolchain exactly. No build step or extra deps.
+          node-version: 22.17.0
           cache: npm
 
       - name: Install dependencies
@@ -34,13 +34,6 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    env:
-      EXPO_PUBLIC_SENTRY_DSN: ${{ secrets.EXPO_PUBLIC_SENTRY_DSN }}
-      EXPO_PUBLIC_POSTHOG_KEY: ${{ secrets.EXPO_PUBLIC_POSTHOG_KEY }}
-      EXPO_PUBLIC_CHATWOOT_INBOX_IDENTIFIER: ${{ secrets.EXPO_PUBLIC_CHATWOOT_INBOX_IDENTIFIER }}
-      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
     steps:
       - uses: actions/checkout@v6
 
@@ -70,20 +63,6 @@ jobs:
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps
-
-      - name: Set Sentry release identifiers
-        # sentry.gradle (applied from android/app/build.gradle) defaults the
-        # upload's --release/--dist to `${applicationId}@${versionName}+${versionCode}`,
-        # which does NOT match the release/dist Sentry.init() reports at runtime
-        # (`opencode-mobile@${app.json version}`, see src/lib/sentry.ts). That
-        # mismatch made every uploaded source map land under a release Sentry
-        # never looks up, so symbolication silently failed. Pin the Gradle-side
-        # values to exactly what the app reports.
-        run: |
-          VERSION=$(node -p "require('./app.json').expo.version")
-          echo "SENTRY_RELEASE=opencode-mobile@${VERSION}" >> "$GITHUB_ENV"
-          echo "SENTRY_DIST=${VERSION}" >> "$GITHUB_ENV"
-          echo "Sentry release=opencode-mobile@${VERSION} dist=${VERSION}"
 
       - name: Expo prebuild
         run: npx expo prebuild --platform android --no-install
