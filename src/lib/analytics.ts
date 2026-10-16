@@ -1,7 +1,7 @@
 // Local-only analytics shim.
 //
 // This client performs NO remote analytics and NO telemetry upload. The
-// previous PostHog wrapper is intentionally removed because third-party US
+// previous PostHog wrapper is intentionally removed because third-party
 // SaaS is unavailable or blocked in some regions (e.g. Iran) and the client
 // is meant to run fully self-hosted.
 //

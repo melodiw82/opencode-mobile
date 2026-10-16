@@ -1,9 +1,10 @@
 # OpenCode Mobile — Iran-friendly fork
 
-Control your [`opencode`](https://github.com/sst/opencode) coding agent from your phone.
-This is a fork of [`dzianisv/opencode-mobile`](https://github.com/dzianisv/opencode-mobile),
-rewired to work without any service that is blocked or unavailable in Iran: **no Google Play
-Services, no Firebase/FCM, no PostHog, no Sentry, no US-hosted push**.
+Control your [`opencode`](https://github.com/sst/opencode) coding agent from your phone —
+send prompts, switch model/agent, answer questions, approve permissions, get notified. A fork
+of [`dzianisv/opencode-mobile`](https://github.com/dzianisv/opencode-mobile) that works
+without any service blocked or unavailable in Iran: **no Google Play Services, no
+Firebase/FCM, no PostHog, no Sentry**.
 
 [![Build Android APK](https://github.com/melodiw82/opencode-mobile/actions/workflows/build.yml/badge.svg)](https://github.com/melodiw82/opencode-mobile/actions/workflows/build.yml)
 
@@ -11,20 +12,23 @@ Services, no Firebase/FCM, no PostHog, no Sentry, no US-hosted push**.
 
 ## Why this fork
 
-Upstream targets the Play Store and reports telemetry to US SaaS. From Iran those calls fail
-or hang, and the app can't be published. This fork keeps the same client — send prompts,
-switch agent/model, answer questions, approve permissions — but sends **nothing to a third
-party** and ships as a self-installed APK.
+Upstream is built for the Play Store and ships telemetry to third-party SaaS. From Iran those calls
+fail or hang, and the app can't be published — so the client is unusable out of the box. This
+fork removes the whole third-party surface and ships as a **self-installed APK built by GitHub
+Actions**, so nothing in the app talks to a service you can't reach.
 
 | | Upstream | This fork |
 |---|---|---|
-| Distribution | Google Play · F-Droid · APK | **Direct APK**, built by GitHub Actions (sideload) |
-| Push / notifications | Firebase (FCM) | **Self-hosted `ntfy`** (+ in-app) |
+| Distribution | Google Play · F-Droid · APK | **Direct APK** from GitHub Actions (sideload) |
+| Notifications | Firebase (FCM) | **Self-hosted `ntfy`** + in-app |
 | Crash reporting | Sentry | **Removed** — local log buffer only |
 | Analytics | PostHog | **Removed** |
-| Rate-limit alerts | generic errors | **dedicated “Usage Limits” notification** |
-| Credentials | Play/OS keystore | OS keystore on Android, `localStorage` on web |
+| Rate/quota alerts | folded into generic errors | **dedicated “Usage Limits” notification** |
+| Credentials | Play/OS keystore | OS keystore (Android) · `localStorage` (web) |
 | Targets | Android + iOS | **Android** (primary) + **web SPA** (secondary) |
+
+**The result:** the same capable client, minus everything that breaks in Iran — and one new
+notification channel you'll actually want (usage limits).
 
 ---
 
@@ -134,23 +138,6 @@ and on `v*` tags; a tag also attaches the APK to a GitHub Release.
 Nothing leaves your device and your server except the AI requests your opencode server makes
 with your own keys. The app never sees your model API keys. The optional relay runs on your
 machine and posts to the ntfy server **you** choose.
-
----
-
-## Verified
-
-Checked against the current `main`; claims here are what actually passed, not aspirations:
-
-- **CI green** on the latest `main` commit — jobs *test*, *Build Android APK*, *web export*
-  all success; artifact `app-release` (~35 MB) built and downloadable.
-- **280 unit tests pass**, `tsc --noEmit` clean, version parity aligned (0.4.15 / 42).
-- **Web export** produces `dist/` with a single SPA bundle.
-- **ntfy bridge** smoke-tested: fake SSE stream → dry-run publish, and against a fake ntfy
-  server (asserted title/priority/tags/click/body).
-
-Not verified here: on-device runtime in the maintainer's environment (no Android SDK / browser
-automation available). Install the APK and add a connection to confirm end-to-end on your
-setup.
 
 ---
 

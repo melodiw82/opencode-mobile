@@ -1,7 +1,7 @@
 # notify-bridge
 
 Self-hosted background notifications for the OpenCode mobile client — **no Firebase, no
-Google Play Services, no US third-party SaaS**.
+Google Play Services, no third-party SaaS**.
 
 The app can only show notifications while it is alive. `notify-bridge.mjs` runs on the
 machine that hosts your opencode server, tails the server's Server-Sent Events stream

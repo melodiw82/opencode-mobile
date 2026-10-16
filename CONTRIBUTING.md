@@ -1,7 +1,7 @@
 # Contributing
 
 Thanks for helping. This fork keeps a hard constraint: **no Google Play Services, Firebase,
-FCM, PostHog, Sentry, or any US third-party analytics/push SDK.** PRs that add such a
+FCM, PostHog, Sentry, or any third-party analytics/push SDK.** PRs that add such a
 dependency will be declined. See [`AGENTS.md`](AGENTS.md) for the architecture and patterns.
 
 ## Setup

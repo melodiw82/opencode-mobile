@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // notify-bridge — self-hosted background notifications for the OpenCode mobile
-// client, with no Firebase, no Google Play services and no US third-party cloud.
+// client, with no Firebase, no Google Play services and no third-party cloud.
 //
 // It tails the opencode server's `/global/event` SSE stream from your own
 // machine and republishes the events you care about to an ntfy server (public

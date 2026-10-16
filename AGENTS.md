@@ -5,10 +5,10 @@
 An Android (and, secondarily, web) client for the [opencode](https://github.com/sst/opencode)
 AI coding agent. Fork of [`dzianisv/opencode-mobile`](https://github.com/dzianisv/opencode-mobile) (MIT),
 stripped of every dependency that is unavailable or blocked in Iran: **no Google Play
-Services, no Firebase/FCM, no PostHog, no Sentry, no expo-store-review, no US-hosted push**.
+Services, no Firebase/FCM, no PostHog, no Sentry, no expo-store-review, no third-party push**.
 
 Hard constraint: **do not add** Google Play Services, Firebase, FCM, PostHog, Sentry, or any
-US third-party analytics/push SDK. Background push is done with the local `bridge/` relay to
+third-party analytics/push SDK. Background push is done with the local `bridge/` relay to
 **ntfy** (self-hostable). Keep it that way.
 
 ## Layout
