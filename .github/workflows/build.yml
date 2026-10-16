@@ -34,6 +34,10 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    env:
+      # Expo's CLI phones home to a US endpoint by default; disable it so builds
+      # are network-independent and don't stall behind a blocked host.
+      EXPO_NO_TELEMETRY: "1"
     steps:
       - uses: actions/checkout@v6
 
