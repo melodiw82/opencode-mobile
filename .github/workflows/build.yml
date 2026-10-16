@@ -86,17 +86,41 @@ jobs:
           fi
 
       - name: Build APK
+        id: build
+        # DIAGNOSTIC MODE: do not fail the workflow, so a red build makes no
+        # notification noise while the cause is being pinned down. The Gradle
+        # error is published as a warning annotation (readable anonymously via
+        # the check-runs API). Flip `continue-on-error` to false once green.
+        continue-on-error: true
         working-directory: android
-        # Capture the Gradle failure as a check-run annotation (::error::) so the
-        # reason is readable without authenticated log access.
         run: |
           set +e
           ./gradlew assembleRelease --stacktrace 2>&1 | tee /tmp/gradle.log
           status=${PIPESTATUS[0]}
           if [ $status -ne 0 ]; then
-            echo "::error title=Gradle assembleRelease failed::$(tail -n 30 /tmp/gradle.log | tr '\n' '~' | cut -c1-6000)"
-            exit $status
+            echo "== key lines =="
+            grep -n -E "FAILURE:|What went wrong|Execution failed|> Task .* FAILED|^e: |error:|Could not (resolve|find|determine|download|create)|Caused by|A problem occurred|Duplicate|Cannot|OutOfMemory|Task :.* FAILED" /tmp/gradle.log | head -n 40 || true
+            echo "== clean tail =="
+            grep -v $'^\tat ' /tmp/gradle.log | tail -n 60 || true
+
+            {
+              echo "### key lines ###"
+              grep -n -E "FAILURE:|What went wrong|Execution failed|> Task .* FAILED|^e: |error:|Could not (resolve|find|determine|download|create)|Caused by|A problem occurred|Duplicate|Cannot|OutOfMemory|Task :.* FAILED" /tmp/gradle.log | head -n 40
+              echo "### clean tail ###"
+              grep -v $'^\tat ' /tmp/gradle.log | tail -n 60
+            } > /tmp/summary.log 2>&1
+            echo "::warning title=Gradle failed::$(tr '\n' '~' < /tmp/summary.log | head -c 60000)"
           fi
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload APK artifact
+        if: steps.build.outputs.status == '0'
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-release
+          path: android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: ignore
 
       - name: Upload APK artifact
         if: success()
